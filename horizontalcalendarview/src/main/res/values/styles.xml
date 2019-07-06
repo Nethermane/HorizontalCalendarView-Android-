@@ -3,6 +3,6 @@
 
     <style name="horizontalCalendarView" parent="@android:style/TextAppearance">
         <item name="android:textColor">#ffffff</item>
-        <item name="android:textSize">12dp</item>
+        <item name="android:textSize">12sp</item>
     </style>
 </resources>

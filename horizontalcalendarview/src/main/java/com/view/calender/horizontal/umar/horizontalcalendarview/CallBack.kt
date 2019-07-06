@@ -1,7 +1,6 @@
 package com.view.calender.horizontal.umar.horizontalcalendarview
 
 import java.lang.reflect.InvocationTargetException
-import java.lang.reflect.Method
 
 /**
  * Created by UManzoor on 2/8/2018.

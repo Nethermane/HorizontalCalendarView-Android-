@@ -5,7 +5,7 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.support.annotation.ColorInt
-import android.util.Pair
+import android.support.v4.content.ContextCompat
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
@@ -72,14 +72,14 @@ class MaterialCalAdapter(context: Context, dayModelList: ArrayList<DayDateMonthY
         view.first.alpha = 0.3f
         view.first.visibility = View.VISIBLE
         view.second.textSize = 20f
-        view.second.setTextColor(context.resources.getColor(color))
-        view.third.setTextColor(context.resources.getColor(color))
+        view.second.setTextColor(ContextCompat.getColor(context, color))
+        view.third.setTextColor(ContextCompat.getColor(context, color))
     }
     private fun styleNonSelectedDate(view: Triple<View, TextView, TextView>) {
         view.first.visibility = View.INVISIBLE
         view.second.textSize = 18f
-        view.second.setTextColor(context.resources.getColor(color))
-        view.third.setTextColor(context.resources.getColor(color))
+        view.second.setTextColor(ContextCompat.getColor(context, color))
+        view.third.setTextColor(ContextCompat.getColor(context, color))
     }
     override fun getViewHolder(itemView: View): MaterialViewHolder {
         return MaterialViewHolder(itemView)

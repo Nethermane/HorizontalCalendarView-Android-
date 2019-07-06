@@ -8,7 +8,7 @@ import android.support.v7.widget.RecyclerView
  * Created by UManzoor on 11/28/2017.
  */
 
-abstract class HorizontalPaginationScroller(internal var layoutManager: LinearLayoutManager) : RecyclerView.OnScrollListener() {
+abstract class HorizontalPaginationScroller(private var layoutManager: LinearLayoutManager) : RecyclerView.OnScrollListener() {
 
     abstract val isLoading: Boolean
 

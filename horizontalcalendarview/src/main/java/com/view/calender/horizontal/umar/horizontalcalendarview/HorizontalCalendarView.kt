@@ -3,6 +3,7 @@ package com.view.calender.horizontal.umar.horizontalcalendarview
 import android.content.Context
 import android.graphics.Color
 import android.support.annotation.ColorInt
+import android.support.constraint.ConstraintLayout
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
@@ -25,56 +26,52 @@ import java.util.Date
 class HorizontalCalendarView : LinearLayout {
 
 
-    lateinit var leftButton: LinearLayout
-    lateinit var rightButton: LinearLayout
-    lateinit var leftImage: ImageView
-    lateinit var rightImage: ImageView
-    internal lateinit var rootView: View
-    internal var context: Context
+    private lateinit var leftImage: ImageView
+    private lateinit var rightImage: ImageView
+    private lateinit var mRootView: View
+    private var mContext: Context
     lateinit var recyclerView: RecyclerView
-    internal var calAdapter: CalAdapter<*>? = null
+    private var calAdapter: CalAdapter<*>? = null
     lateinit var currentDayModelList: ArrayList<DayDateMonthYearModel>
-    lateinit var horizontalPaginationScroller: HorizontalPaginationScroller
-    lateinit var cal: Calendar
-    lateinit var calPrevious: Calendar
-    lateinit var dateFormat: DateFormat
-    lateinit var date: Date
-    internal var datePrevious: Date? = null
+    private lateinit var horizontalPaginationScroller: HorizontalPaginationScroller
+    private lateinit var cal: Calendar
+    private lateinit var calPrevious: Calendar
+    private lateinit var dateFormat: DateFormat
+    private lateinit var date: Date
+    //internal var datePrevious: Date? = null
     lateinit var linearLayoutManager: LinearLayoutManager
-    lateinit var mainBackground: LinearLayout
+    private lateinit var mainBackground: ConstraintLayout
     lateinit var toCallBack: HorizontalCalendarListener
-    private var isLoading: Boolean = false
-    private var changedToMaterial: Boolean = false
+    private var isLoading = false
+    private var changedToMaterial = false
     private var materialColor: Int = Color.parseColor("#00ff00")
-    private var singleItemWidth: Int = 0
+    private var singleItemWidth = 0
     private var mode: CalAdapter.WeekNameMode = CalAdapter.WeekNameMode.SHORT
 
-    constructor(context: Context) : super(context) {
-        this.context = context
+    constructor(mContext: Context) : super(mContext) {
+        this.mContext = mContext
         init()
     }
 
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        this.context = context
+    constructor(mContext: Context, attrs: AttributeSet?) : super(mContext, attrs) {
+        this.mContext = mContext
         init()
     }
 
-    fun init() {
-        rootView = View.inflate(context, R.layout.custom_calender_layout, this)
-        leftButton = findViewById(R.id.swipe_left)
-        rightButton = findViewById(R.id.swipe_right)
+    private fun init() {
+        mRootView = View.inflate(mContext, R.layout.custom_calender_layout, this)
         recyclerView = findViewById(R.id.recycler_view)
         mainBackground = findViewById(R.id.main_background)
         leftImage = findViewById(R.id.left_image_view)
         rightImage = findViewById(R.id.right_image_view)
         loadNextPage()
-        leftButton.setOnClickListener {
-            //                Toast.makeText(context, "left but", Toast.LENGTH_SHORT).show();
+        leftImage.setOnClickListener {
+            //                Toast.makeText(mContext, "left but", Toast.LENGTH_SHORT).show();
             //                if (linearLayoutManager.findFirstVisibleItemPosition())
             recyclerView.smoothScrollToPosition(linearLayoutManager.findFirstVisibleItemPosition() - 3)
         }
-        rightButton.setOnClickListener {
-            //                Toast.makeText(context, "right but", Toast.LENGTH_SHORT).show();
+        rightImage.setOnClickListener {
+            //                Toast.makeText(mContext, "right but", Toast.LENGTH_SHORT).show();
             recyclerView.smoothScrollToPosition(linearLayoutManager.findLastVisibleItemPosition() + 3)
         }
 
@@ -86,7 +83,7 @@ class HorizontalCalendarView : LinearLayout {
                 if (dx > 0) {
                     for (i in firstVisibleIndex until lastVisibleIndex) {
 
-                        if (currentDayModelList[i].month!!.compareTo(currentDayModelList[i + 1].month!!) != 0) {
+                        if (currentDayModelList[i].month.compareTo(currentDayModelList[i + 1].month) != 0) {
                             try {
                                 val cb = CallBack(toCallBack, "updateMonthOnScroll")
                                 cb.invoke(currentDayModelList[i + 1])
@@ -103,7 +100,7 @@ class HorizontalCalendarView : LinearLayout {
                 } else if (dx < 0) {
                     for (i in lastVisibleIndex downTo firstVisibleIndex + 1) {
 
-                        if (currentDayModelList[i].month!!.compareTo(currentDayModelList[i + 1].month!!) != 0) {
+                        if (currentDayModelList[i].month.compareTo(currentDayModelList[i + 1].month) != 0) {
                             try {
                                 val cb = CallBack(toCallBack, "updateMonthOnScroll")
                                 cb.invoke(currentDayModelList[i])
@@ -130,7 +127,12 @@ class HorizontalCalendarView : LinearLayout {
         }
         if (calAdapter == null) {
             currentDayModelList = ArrayList()
-            dateFormat = SimpleDateFormat("MMMM-EEE-yyyy-MM-dd")
+            dateFormat = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                SimpleDateFormat("MMMM-EEE-yyyy-MM-dd", mContext.resources.configuration.locales[0])
+            } else {
+                @Suppress("DEPRECATION")
+                SimpleDateFormat("MMMM-EEE-yyyy-MM-dd", mContext.resources.configuration.locale)
+            }
             date = Date()
             //System.out.println("Day 1"+" "+dateFormat.format(date));
             val currentDate = dateFormat.format(date).toString()
@@ -176,7 +178,7 @@ class HorizontalCalendarView : LinearLayout {
                         , false)
                 currentDayModelList.add(currentDayMode)
                 calAdapter = newCalAdapter()
-                linearLayoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+                linearLayoutManager = LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false)
                 recyclerView.layoutManager = linearLayoutManager
                 recyclerView.itemAnimator = DefaultItemAnimator()
                 recyclerView.adapter = calAdapter
@@ -192,7 +194,7 @@ class HorizontalCalendarView : LinearLayout {
 
                     override fun loadMoreItemsOnLeft() {
                         //                        isLoading = true;
-                        //                        Toast.makeText(context, "Reached Left", Toast.LENGTH_SHORT).show();
+                        //                        Toast.makeText(mContext, "Reached Left", Toast.LENGTH_SHORT).show();
                         //                        loadPreviousPage( );
                     }
                 }
@@ -228,7 +230,7 @@ class HorizontalCalendarView : LinearLayout {
     }
 
     private fun newCalAdapter(): CalAdapter<*> {
-        val res = if (changedToMaterial) MaterialCalAdapter(context, currentDayModelList, materialColor) else CalAdapter<CalAdapter.MyViewHolder>(context, currentDayModelList)
+        val res = if (changedToMaterial) MaterialCalAdapter(mContext, currentDayModelList, materialColor) else CalAdapter<CalAdapter.MyViewHolder>(mContext, currentDayModelList)
         reinitCalAdapterData(res)
         changedToMaterial = false
         return res
@@ -267,37 +269,19 @@ class HorizontalCalendarView : LinearLayout {
     }
 
     fun setControlTint(color: Int) {
-        rightImage.setColorFilter(ContextCompat.getColor(context, color), android.graphics.PorterDuff.Mode.SRC_IN)
-        leftImage.setColorFilter(ContextCompat.getColor(context, color), android.graphics.PorterDuff.Mode.SRC_IN)
+        rightImage.setColorFilter(ContextCompat.getColor(mContext, color), android.graphics.PorterDuff.Mode.SRC_IN)
+        leftImage.setColorFilter(ContextCompat.getColor(mContext, color), android.graphics.PorterDuff.Mode.SRC_IN)
     }
 
     fun showControls(show: Boolean) {
         if (show) {
-            leftButton.visibility = View.VISIBLE
-            rightButton.visibility = View.VISIBLE
-            val param = LinearLayout.LayoutParams(
-                    0,
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    7.0f
-            )
-            val paramTwo = LinearLayout.LayoutParams(
-                    0,
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    1.5f
-            )
-            paramTwo.topMargin = 20
-            paramTwo.bottomMargin = 20
-            leftButton.layoutParams = paramTwo
-            rightButton.layoutParams = paramTwo
-            recyclerView.layoutParams = param
+            leftImage.visibility = View.VISIBLE
+            rightImage.visibility = View.VISIBLE
+
 
         } else {
-            leftButton.visibility = View.GONE
-            rightButton.visibility = View.GONE
-            val param = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT)
-            recyclerView.layoutParams = param
+            leftImage.visibility = View.GONE
+            rightImage.visibility = View.GONE
         }
         askForRecalculateItemWidth()
     }

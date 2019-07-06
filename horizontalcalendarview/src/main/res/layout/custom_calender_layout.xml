@@ -1,50 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main_background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/appointmentGray"
-    android:orientation="horizontal"
-    android:weightSum="10">
+    android:background="@color/appointmentGray">
 
-    <LinearLayout
-        android:id="@+id/swipe_left"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1.5"
-        android:paddingBottom="15dp"
-        android:paddingTop="15dp">
 
-        <ImageView
-            android:id="@+id/left_image_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:srcCompat="@drawable/ic_appointment_back" />
-
-    </LinearLayout>
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recycler_view"
+    <ImageView
+        android:contentDescription="@string/content_desc_left_control"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/left_image_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="7">
+        android:adjustViewBounds="true"
+        app:layout_constraintWidth_percent="0.1"
+        app:srcCompat="@drawable/ic_appointment_back" />
+
+
+    <android.support.v7.widget.RecyclerView
+        app:layout_constraintStart_toEndOf="@id/left_image_view"
+        app:layout_constraintEnd_toStartOf="@id/right_image_view"
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/recycler_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content">
 
     </android.support.v7.widget.RecyclerView>
 
-    <LinearLayout
-        android:id="@+id/swipe_right"
+    <ImageView
+        android:contentDescription="@string/content_desc_right_control"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/right_image_view"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1.5"
-        android:paddingBottom="15dp"
-        android:paddingTop="15dp">
+        android:layout_height="wrap_content"
+        app:layout_constraintWidth_percent="0.1"
+        android:adjustViewBounds="true"
+        app:srcCompat="@drawable/ic_appointment_next" />
 
-        <ImageView
-            android:id="@+id/right_image_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:srcCompat="@drawable/ic_appointment_next" />
-    </LinearLayout>
-
-</LinearLayout>
+</android.support.constraint.ConstraintLayout>

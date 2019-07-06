@@ -1,7 +1,7 @@
 package com.view.calender.horizontal.umar
 
-import android.graphics.Color
 import android.os.Bundle
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.widget.Button
 import android.widget.TextView
@@ -14,7 +14,7 @@ import com.view.calender.horizontal.umar.horizontalcalendarview.HorizontalCalend
 class MainActivity : AppCompatActivity(), HorizontalCalendarListener {
 
     private lateinit var textView: TextView
-    lateinit var button: Button
+    private lateinit var button: Button
     private var controlsShown = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity(), HorizontalCalendarListener {
         button = findViewById(R.id.button)
         val hcv = findViewById<HorizontalCalendarView>(R.id.hcv)
         hcv.setContext(this@MainActivity)
-        hcv.setBackgroundColor(resources.getColor(R.color.background))
+        hcv.setBackgroundColor(ContextCompat.getColor(this, R.color.background))
         //hcv.setMaterialStyle(true, 0xfff16262.toInt())
         hcv.setWeekNameMode(CalAdapter.WeekNameMode.MEDIUM)
         hcv.showControls(false)
@@ -34,23 +34,23 @@ class MainActivity : AppCompatActivity(), HorizontalCalendarListener {
         button.setOnClickListener {
             if (controlsShown) {
                 hcv.showControls(false)
-                button.text = "Show Controls"
+                button.text = getString(R.string.show_controls)
             } else {
                 hcv.showControls(true)
-                button.text = "Hide Controls"
+                button.text = getString(R.string.hide_controls)
             }
             controlsShown = !controlsShown
         }
     }
 
     override fun updateMonthOnScroll(selectedDate: DayDateMonthYearModel) {
-        val value = "" + selectedDate?.month + " " + selectedDate?.year
+        val value = "" + selectedDate.month + " " + selectedDate.year
         textView.text = value
 
     }
 
     override fun newDateSelected(selectedDate: DayDateMonthYearModel) {
-        Toast.makeText(this@MainActivity, selectedDate?.date + "" + selectedDate?.month + " " + selectedDate?.year, Toast.LENGTH_LONG).show()
+        Toast.makeText(this@MainActivity, selectedDate.date + "" + selectedDate.month + " " + selectedDate.year, Toast.LENGTH_LONG).show()
     }
 
 }
