@@ -23,7 +23,7 @@
     <com.view.calender.horizontal.umar.horizontalcalendarview.HorizontalCalendarView
         android:id="@+id/hcv"
         android:layout_width="match_parent"
-        android:layout_height="85dp">
+        android:layout_height="wrap_content">
 
     </com.view.calender.horizontal.umar.horizontalcalendarview.HorizontalCalendarView>
 

@@ -1,5 +1,6 @@
 package com.view.calender.horizontal.umar
 
+import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.widget.Button
@@ -24,7 +25,7 @@ class MainActivity : AppCompatActivity(), HorizontalCalendarListener {
         val hcv = findViewById<HorizontalCalendarView>(R.id.hcv)
         hcv.setContext(this@MainActivity)
         hcv.setBackgroundColor(resources.getColor(R.color.background))
-        hcv.setMaterialStyle(true)
+        //hcv.setMaterialStyle(true, 0xfff16262.toInt())
         hcv.setWeekNameMode(CalAdapter.WeekNameMode.MEDIUM)
         hcv.showControls(false)
         hcv.setControlTint(R.color.colorAccent)
@@ -42,13 +43,13 @@ class MainActivity : AppCompatActivity(), HorizontalCalendarListener {
         }
     }
 
-    override fun updateMonthOnScroll(selectedDate: DayDateMonthYearModel?) {
+    override fun updateMonthOnScroll(selectedDate: DayDateMonthYearModel) {
         val value = "" + selectedDate?.month + " " + selectedDate?.year
         textView.text = value
 
     }
 
-    override fun newDateSelected(selectedDate: DayDateMonthYearModel?) {
+    override fun newDateSelected(selectedDate: DayDateMonthYearModel) {
         Toast.makeText(this@MainActivity, selectedDate?.date + "" + selectedDate?.month + " " + selectedDate?.year, Toast.LENGTH_LONG).show()
     }
 
