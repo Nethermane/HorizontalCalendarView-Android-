@@ -3,6 +3,7 @@ package com.view.calender.horizontal.umar.horizontalcalendarview
 import android.content.Context
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
+import android.support.v4.content.ContextCompat
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -45,15 +46,16 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
         return getViewHolder(itemView)
     }
 
+    @Suppress("UNCHECKED_CAST")
     protected open fun getViewHolder(itemView: View): T {
         return MyViewHolder(itemView) as T
     }
 
     override fun onBindViewHolder(holder: T, position: Int) {
         val t = getWeekDayName(position)
-        holder.day.setTextColor(context.resources.getColor(color))
-        holder.date.setTextColor(context.resources.getColor(color))
-        if (dayModelList[position].isToday!!) {
+        holder.day.setTextColor(ContextCompat.getColor(context, color))
+        holder.date.setTextColor(ContextCompat.getColor(context, color))
+        if (dayModelList[position].isToday) {
             updateSelectedItemUI(holder.itemView)
             lastDaySelected = dayModelList[position]
             try {
@@ -67,14 +69,14 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
 
         }
 
-        holder.day.setText(t!! + " ")
-        holder.date.setText(dayModelList[position].date)
-        holder.itemView.setTag(position)
+        holder.day.text = context.getString(R.string.add_space_to_end, t)
+        holder.date.text = dayModelList[position].date
+        holder.itemView.tag = position
         dateArrayList.add(holder.date)
         dayArrayList.add(holder.day)
         dividerArrayList.add(holder.divider)
-        holder.divider.setBackgroundColor(context.resources.getColor(color))
-        holder.itemView.setOnClickListener(View.OnClickListener { v ->
+        holder.divider.setBackgroundColor(ContextCompat.getColor(context, color))
+        holder.itemView.setOnClickListener { v ->
             val pos = Integer.valueOf(v.tag.toString())
             updateSelectedItemUI(v)
 
@@ -88,42 +90,39 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
             }
 
             lastDaySelected = dayModelList[pos]
-        })
+        }
     }
 
     protected open fun updateSelectedItemUI(root: View) {
         val date = root.findViewById<TextView>(R.id.date)
         if (clickedTextView == null) {
             clickedTextView = date
-            clickedTextView!!.background = context.resources.getDrawable(R.drawable.background_selected_day)
-            clickedTextView!!.setTextColor(context.resources.getColor(R.color.white))
+            clickedTextView!!.background = ContextCompat.getDrawable(context, R.drawable.background_selected_day)
+            clickedTextView!!.setTextColor(ContextCompat.getColor(context, R.color.white))
             clickedTextView!!.setTypeface(clickedTextView!!.typeface, Typeface.NORMAL)
         } else {
             //                    if(!dayModelList.get(pos).isToday) {
-            if (lastDaySelected != null && lastDaySelected!!.isToday!!) {
-                clickedTextView!!.background = context.resources.getDrawable(R.drawable.currect_date_background)
-                clickedTextView!!.setTextColor(context.resources.getColor(R.color.white))
+            if (lastDaySelected != null && lastDaySelected!!.isToday) {
+                clickedTextView!!.background = ContextCompat.getDrawable(context, R.drawable.currect_date_background)
+                clickedTextView!!.setTextColor(ContextCompat.getColor(context, R.color.white))
                 clickedTextView!!.setTypeface(clickedTextView!!.typeface, Typeface.NORMAL)
             } else {
                 clickedTextView!!.background = null
-                clickedTextView!!.setTextColor(context.resources.getColor(R.color.grayTextColor))
+                clickedTextView!!.setTextColor(ContextCompat.getColor(context, R.color.grayTextColor))
                 clickedTextView!!.setTypeface(clickedTextView!!.typeface, Typeface.NORMAL)
             }
             clickedTextView = date
-            clickedTextView!!.background = context.resources.getDrawable(R.drawable.background_selected_day)
-            clickedTextView!!.setTextColor(context.resources.getColor(R.color.white))
+            clickedTextView!!.background = ContextCompat.getDrawable(context, R.drawable.background_selected_day)
+            clickedTextView!!.setTextColor(ContextCompat.getColor(context, R.color.white))
             clickedTextView!!.setTypeface(clickedTextView!!.typeface, Typeface.NORMAL)
         }
     }
 
     private fun getWeekDayName(position: Int): String? {
         val day = dayModelList[position].day
-        when (weekMode) {
-            CalAdapter.WeekNameMode.SHORT -> return day!!.substring(0, 1)
-            CalAdapter.WeekNameMode.MEDIUM -> return day
-            else ->
-                //never happens
-                return null
+        return when (weekMode) {
+            WeekNameMode.SHORT -> day.substring(0, 1)
+            WeekNameMode.MEDIUM -> day
         }
     }
 
@@ -149,9 +148,9 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
     fun changeAccent(color: Int) {
         this.color = color
         for (i in dateArrayList.indices) {
-            dayArrayList[i].setTextColor(context.resources.getColor(color))
-            dateArrayList[i].setTextColor(context.resources.getColor(color))
-            dividerArrayList[i].setBackgroundColor(context.resources.getColor(color))
+            dayArrayList[i].setTextColor(ContextCompat.getColor(context, color))
+            dateArrayList[i].setTextColor(ContextCompat.getColor(context, color))
+            dividerArrayList[i].setBackgroundColor(ContextCompat.getColor(context, color))
         }
     }
 
@@ -171,17 +170,13 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
         SHORT, MEDIUM
     }
 
-    open class MyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        var day: TextView
-        var date: TextView
+    open class MyViewHolder(root: View) : RecyclerView.ViewHolder(root) {
+        var day: TextView = root.findViewById(R.id.day)
+        var date: TextView = root.findViewById(R.id.date)
         var background: View
-        var divider: View
-        var root: View? = null
+        var divider: View = root.findViewById(R.id.divider)
 
         init {
-            day = view.findViewById(R.id.day)
-            date = view.findViewById(R.id.date)
-            divider = view.findViewById(R.id.divider)
             background = date
         }
 
