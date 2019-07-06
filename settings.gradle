@@ -1,1 +1,1 @@
-include ':app', ':horizontalcalendarview', ':horizontalcalendarviewlibrary'
+include ':app', ':horizontalcalendarview'
