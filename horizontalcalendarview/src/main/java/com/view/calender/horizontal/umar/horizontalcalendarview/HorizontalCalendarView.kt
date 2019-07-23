@@ -7,6 +7,7 @@ import android.support.constraint.ConstraintLayout
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.LinearSnapHelper
 import android.support.v7.widget.RecyclerView
 import android.util.AttributeSet
 import android.view.View
@@ -47,7 +48,9 @@ class HorizontalCalendarView : LinearLayout {
     private var materialColor: Int = Color.parseColor("#00ff00")
     private var singleItemWidth = 0
     private var mode: CalAdapter.WeekNameMode = CalAdapter.WeekNameMode.SHORT
-
+    private lateinit var materialSizeStyle: MaterialCalAdapter.Companion.MaterialSizeStyle
+    private var paddingBetweenElements = 10
+    private var todayDateModel: DayDateMonthYearModel? = null
     constructor(mContext: Context) : super(mContext) {
         this.mContext = mContext
         init()
@@ -134,15 +137,10 @@ class HorizontalCalendarView : LinearLayout {
                 SimpleDateFormat("MMMM-EEE-yyyy-MM-dd", mContext.resources.configuration.locale)
             }
             date = Date()
+            cal = Calendar.getInstance()
             //System.out.println("Day 1"+" "+dateFormat.format(date));
-            val currentDate = dateFormat.format(date).toString()
-            val partsDate = currentDate.split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            val currentDayModel = DayDateMonthYearModel(partsDate[0]
-                    , partsDate[4]
-                    , partsDate[1]
-                    , partsDate[2]
-                    , partsDate[3]
-                    , true)
+            val currentDayModel = DayDateMonthYearModel(cal.timeInMillis, true)
+            todayDateModel = currentDayModel
             calPrevious = Calendar.getInstance()
             cal = Calendar.getInstance()
             cal.time = date
@@ -151,68 +149,48 @@ class HorizontalCalendarView : LinearLayout {
 
             for (i in 0..29) {
                 calPrevious.add(Calendar.DAY_OF_WEEK, -1)
-                val nextDate = dateFormat.format(calPrevious.time)
-                val partsNextDate = nextDate.split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                val previousDayMode = DayDateMonthYearModel(partsNextDate[0]
-                        , partsNextDate[4]
-                        , partsNextDate[1]
-                        , partsNextDate[2]
-                        , partsNextDate[3]
-                        , false)
+                val previousDayModel = DayDateMonthYearModel(calPrevious.timeInMillis)
                 isLoading = false
                 //                calAdapter.addPrevious(currentDayMode);
-                currentDayModelList.add(0, previousDayMode)
+                currentDayModelList.add(0, previousDayModel)
             }
             currentDayModelList.add(currentDayModel)
 
             //SimpleDateFormat sdf = new SimpleDateFormat("MMM EEE yyyy-MM-dd");
             for (i in 0..29) {
                 cal.add(Calendar.DAY_OF_WEEK, 1)
-                val nextDate = dateFormat.format(cal.time)
-                val partsNextDate = nextDate.split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                val currentDayMode = DayDateMonthYearModel(partsNextDate[0]
-                        , partsNextDate[4]
-                        , partsNextDate[1]
-                        , partsNextDate[2]
-                        , partsNextDate[3]
-                        , false)
-                currentDayModelList.add(currentDayMode)
-                calAdapter = newCalAdapter()
-                linearLayoutManager = LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false)
-                recyclerView.layoutManager = linearLayoutManager
-                recyclerView.itemAnimator = DefaultItemAnimator()
-                recyclerView.adapter = calAdapter
-                horizontalPaginationScroller = object : HorizontalPaginationScroller(linearLayoutManager) {
-
-                    override val isLoading: Boolean
-                        get() = this@HorizontalCalendarView.isLoading
-
-                    override fun loadMoreItems() {
-                        this@HorizontalCalendarView.isLoading = true
-                        loadNextPage()
-                    }
-
-                    override fun loadMoreItemsOnLeft() {
-                        //                        isLoading = true;
-                        //                        Toast.makeText(mContext, "Reached Left", Toast.LENGTH_SHORT).show();
-                        //                        loadPreviousPage( );
-                    }
-                }
-                recyclerView.addOnScrollListener(horizontalPaginationScroller)
+                val nextDayModel = DayDateMonthYearModel(cal.timeInMillis)
+                currentDayModelList.add(nextDayModel)
             }
+            calAdapter = newCalAdapter()
+            linearLayoutManager = LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false)
+            recyclerView.layoutManager = linearLayoutManager
+            recyclerView.itemAnimator = DefaultItemAnimator()
+            recyclerView.adapter = calAdapter
+            LinearSnapHelper().attachToRecyclerView(recyclerView)
+            horizontalPaginationScroller = object : HorizontalPaginationScroller(linearLayoutManager) {
+
+                override val isLoading: Boolean
+                    get() = this@HorizontalCalendarView.isLoading
+
+                override fun loadMoreItems() {
+                    this@HorizontalCalendarView.isLoading = true
+                    loadNextPage()
+                }
+
+                override fun loadMoreItemsOnLeft() {
+                    //                        isLoading = true;
+                    //                        Toast.makeText(mContext, "Reached Left", Toast.LENGTH_SHORT).show();
+                    //                        loadPreviousPage( );
+                }
+            }
+            recyclerView.addOnScrollListener(horizontalPaginationScroller)
         } else {
             for (i in 0..29) {
                 cal.add(Calendar.DAY_OF_WEEK, 1)
-                val nextDate = dateFormat.format(cal.time)
-                val partsNextDate = nextDate.split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                val currentDayMode = DayDateMonthYearModel(partsNextDate[0]
-                        , partsNextDate[4]
-                        , partsNextDate[1]
-                        , partsNextDate[2]
-                        , partsNextDate[3]
-                        , false)
+                val nextDayModel = DayDateMonthYearModel(cal.timeInMillis)
                 isLoading = false
-                calAdapter!!.add(currentDayMode)
+                calAdapter!!.add(nextDayModel)
             }
         }
     }
@@ -230,7 +208,7 @@ class HorizontalCalendarView : LinearLayout {
     }
 
     private fun newCalAdapter(): CalAdapter<*> {
-        val res = if (changedToMaterial) MaterialCalAdapter(mContext, currentDayModelList, materialColor) else CalAdapter<CalAdapter.MyViewHolder>(mContext, currentDayModelList)
+        val res = if (changedToMaterial) MaterialCalAdapter(mContext, currentDayModelList, materialColor, materialSizeStyle) else CalAdapter<CalAdapter.MyViewHolder>(mContext, currentDayModelList)
         reinitCalAdapterData(res)
         changedToMaterial = false
         return res
@@ -249,7 +227,7 @@ class HorizontalCalendarView : LinearLayout {
                     object : ViewTreeObserver.OnGlobalLayoutListener {
                         override fun onGlobalLayout() {
                             recyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                            singleItemWidth = recyclerView.width / 7
+                            singleItemWidth = recyclerView.width / 7 - paddingBetweenElements
                             updateRecyclerItemWidth(res)
                             res.notifyDataSetChanged()
                         }
@@ -261,7 +239,8 @@ class HorizontalCalendarView : LinearLayout {
     }
 
     private fun updateRecyclerItemWidth(res: CalAdapter<*>) {
-        res.setItemWidth(singleItemWidth)
+        res.itemWidthPx = singleItemWidth
+        res.paddingBetweenElements = this.paddingBetweenElements
     }
 
     override fun setBackgroundColor(color: Int) {
@@ -295,16 +274,8 @@ class HorizontalCalendarView : LinearLayout {
 
     fun setContext(toCallBack: HorizontalCalendarListener) {
         this.toCallBack = toCallBack
-        calAdapter!!.setCallback(toCallBack)
-        val date = Date()
-        val currentDate = dateFormat.format(date).toString()
-        val partsDate = currentDate.split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        val currentDayModel = DayDateMonthYearModel(partsDate[0]
-                , partsDate[4]
-                , partsDate[1]
-                , partsDate[2]
-                , partsDate[3]
-                , true)
+        calAdapter!!.toCallBack = toCallBack
+        val currentDayModel = DayDateMonthYearModel(Calendar.getInstance().timeInMillis)
 
         try {
             val cb = CallBack(toCallBack, "updateMonthOnScroll")
@@ -313,16 +284,17 @@ class HorizontalCalendarView : LinearLayout {
         } catch (e: IllegalAccessException) {
         } catch (e: NoSuchMethodException) {
         }
-
     }
+
 
     fun changeAccent(color: Int) {
         calAdapter!!.changeAccent(color)
     }
 
-    fun setMaterialStyle(isMaterial: Boolean, @ColorInt color: Int) {
+    fun setMaterialStyle(isMaterial: Boolean, @ColorInt color: Int, materialSizeStyle: MaterialCalAdapter.Companion.MaterialSizeStyle = MaterialCalAdapter.Companion.MaterialSizeStyle.SMALL) {
         this.changedToMaterial = isMaterial
         this.materialColor = color
+        this.materialSizeStyle = materialSizeStyle
         loadNextPage()
     }
 

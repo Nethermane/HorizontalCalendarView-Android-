@@ -2,17 +2,16 @@ package com.view.calender.horizontal.umar.horizontalcalendarview.material
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.support.annotation.ColorInt
 import android.support.v4.content.ContextCompat
+import android.support.v7.widget.RecyclerView
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.TextView
-
-import com.view.calender.horizontal.umar.horizontalcalendarview.CalAdapter
-import com.view.calender.horizontal.umar.horizontalcalendarview.DayDateMonthYearModel
-import com.view.calender.horizontal.umar.horizontalcalendarview.R
+import com.view.calender.horizontal.umar.horizontalcalendarview.*
 
 import java.util.ArrayList
 
@@ -21,85 +20,87 @@ import java.util.ArrayList
  * Modified by Nethermane 04/07/2019
  */
 
-class MaterialCalAdapter(context: Context, dayModelList: ArrayList<DayDateMonthYearModel>, @ColorInt val argb: Int) : CalAdapter<MaterialCalAdapter.MaterialViewHolder>(context, dayModelList) {
+class MaterialCalAdapter(context: Context, dayModelList: ArrayList<DayDateMonthYearModel>, @ColorInt val argb: Int, private val materialSizeStyle: MaterialSizeStyle = MaterialSizeStyle.SMALL) : CalAdapter<MaterialCalAdapter.MaterialViewHolder>(context, dayModelList) {
+    companion object {
+        enum class MaterialSizeStyle {
+            MINI, SMALL, NORMAL
+        }
+    }
+
     private var clickedView: Triple<View, TextView, TextView>? = null
     override val customLayout: Int
-        get() = R.layout.material_custom_day_layout
+        get() = when (materialSizeStyle) {
+            MaterialSizeStyle.MINI -> R.layout.mini_custom_day_layout
+            MaterialSizeStyle.SMALL -> R.layout.small_custom_day_layout
+            MaterialSizeStyle.NORMAL -> R.layout.small_custom_day_layout
+        }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MaterialViewHolder {
+        val holder = super.onCreateViewHolder(parent, viewType)
+        (holder.background.background as GradientDrawable).setColor(argb)
+        return holder
+    }
 
     override fun onBindViewHolder(holder: MaterialViewHolder, position: Int) {
         super.onBindViewHolder(holder, position)
         holder.updateWidth()
     }
 
-    override fun updateSelectedItemUI(root: View) {
-        val clicked = root.findViewById<View>(R.id.background)
-        (clicked.background as GradientDrawable).setColor(argb)
-        val shape = GradientDrawable()
-        shape.cornerRadius = 16f
-        shape.setColor(argb)
-        clicked.background = shape
-        val day = root.findViewById<TextView>(R.id.day)
-        val date = root.findViewById<TextView>(R.id.date)
-        with(clickedView) {
-            if (this != null) {
-                //Selecting a date from todays date being selected
-                if (lastDaySelected != null && lastDaySelected!!.isToday) {
-                    styleTodaysDate(this)
-                } else {
-                    //Selecting a date where the last selected wasn't today
-                    styleNonSelectedDate(this)
-                }
-                //set selected date
-                clickedView = Triple(clicked, date, day).also { newClickedView ->
-                    styleCurrentDate(newClickedView)
-                }
-            } else {
-                clickedView = Triple(clicked, date, day).also { newClickedView ->
-                    styleCurrentDate(newClickedView)
-                }
-
-            }
-        }
-    }
-    private fun styleCurrentDate(view: Triple<View, TextView, TextView>) {
-        view.first.alpha = 1f
-        view.first.visibility = View.VISIBLE
-        view.second.textSize = 20f
-        view.second.setTextColor(Color.WHITE)
-        view.third.setTextColor(Color.WHITE)
-    }
-    private fun styleTodaysDate(view: Triple<View, TextView, TextView>) {
-        view.first.alpha = 0.3f
-        view.first.visibility = View.VISIBLE
-        view.second.textSize = 20f
-        view.second.setTextColor(ContextCompat.getColor(context, color))
-        view.third.setTextColor(ContextCompat.getColor(context, color))
-    }
-    private fun styleNonSelectedDate(view: Triple<View, TextView, TextView>) {
-        view.first.visibility = View.INVISIBLE
-        view.second.textSize = 18f
-        view.second.setTextColor(ContextCompat.getColor(context, color))
-        view.third.setTextColor(ContextCompat.getColor(context, color))
-    }
     override fun getViewHolder(itemView: View): MaterialViewHolder {
         return MaterialViewHolder(itemView)
     }
 
 
-    inner class MaterialViewHolder(view: View) : MyViewHolder(view) {
-        init {
-            background = view.findViewById(R.id.background)
+    override fun styleCurrentDate(holder: MaterialViewHolder) {
+        with(holder) {
+            background.alpha = 1f
+            background.visibility = View.VISIBLE
+            date.textSize = 20f
+            if (materialSizeStyle == MaterialSizeStyle.MINI) {
+                day.setTextColor(Color.BLACK)
+                date.setTextColor(Color.WHITE)
+            } else {
+                day.setTextColor(Color.WHITE)
+                date.setTextColor(Color.WHITE)
+            }
         }
+    }
 
-        override fun setBackgroundColor(drawable: Drawable) {
-            this.background.visibility = View.VISIBLE
+    override fun styleTodaysDate(holder: MaterialViewHolder) {
+        with(holder) {
+            background.alpha = 0.3f
+            background.visibility = View.VISIBLE
+            date.textSize = 20f
+            date.setTextColor(ContextCompat.getColor(context, color))
+            day.setTextColor(ContextCompat.getColor(context, color))
         }
+    }
+
+    override fun styleNonSelectedDate(holder: MaterialViewHolder) {
+        with(holder) {
+            background.visibility = View.INVISIBLE
+            date.textSize = 18f
+            date.setTextColor(ContextCompat.getColor(context, color))
+            day.setTextColor(ContextCompat.getColor(context, color))
+        }
+    }
+
+
+    inner class MaterialViewHolder(view: View) : MyViewHolder(view) {
+        val background: LinearLayout = view.findViewById(R.id.background)
+
 
         fun updateWidth() {
             //to show only 7 days on screen at single time
-            setNewWidth(day)
-            setNewWidth(date)
-            setNewWidth(background)
+            itemView.setPadding(paddingBetweenElements / 2, 0, paddingBetweenElements / 2, 0)
+            if (materialSizeStyle == MaterialSizeStyle.MINI) {
+                setNewWidthParent(itemView)
+                //setNewSizeSquare(background)
+            } else {
+                setNewWidth(day)
+                setNewWidth(date)
+                setNewWidth(background)
+            }
         }
 
         private fun setNewWidth(v: View) {
@@ -108,8 +109,28 @@ class MaterialCalAdapter(context: Context, dayModelList: ArrayList<DayDateMonthY
             }
         }
 
+        private fun setNewWidthParent(v: View) {
+            if (v.measuredWidth != itemWidthPx) {
+                v.layoutParams = getNewRecylerViewChildParams(v)
+            }
+        }
+
+        private fun setNewSizeSquare(v: View) {
+            if (v.measuredWidth != itemWidthPx || v.measuredHeight != itemWidthPx) {
+                v.layoutParams = getNewSquareParams()
+            }
+        }
+
         private fun getNewParams(root: View): FrameLayout.LayoutParams {
-            return FrameLayout.LayoutParams(itemWidthPx, root.layoutParams.height)
+            return FrameLayout.LayoutParams(itemWidthPx + paddingBetweenElements / 2, root.layoutParams.height)
+        }
+
+        private fun getNewRecylerViewChildParams(root: View): RecyclerView.LayoutParams {
+            return RecyclerView.LayoutParams(itemWidthPx + paddingBetweenElements / 2, root.layoutParams.height)
+        }
+
+        private fun getNewSquareParams(): FrameLayout.LayoutParams {
+            return FrameLayout.LayoutParams(itemWidthPx, itemWidthPx)
         }
     }
 }

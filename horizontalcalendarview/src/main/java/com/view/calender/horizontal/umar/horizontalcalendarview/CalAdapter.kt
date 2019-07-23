@@ -3,12 +3,16 @@ package com.view.calender.horizontal.umar.horizontalcalendarview
 import android.content.Context
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.TextView
+import kotlinx.android.synthetic.main.mini_custom_day_layout.view.*
 
 import java.lang.reflect.InvocationTargetException
 import java.util.ArrayList
@@ -18,27 +22,18 @@ import java.util.ArrayList
  * Modified by Nethermane 04/07/2019
  */
 
-open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Context, private val dayModelList: ArrayList<DayDateMonthYearModel>) : RecyclerView.Adapter<T>() {
-    protected var itemWidthPx: Int = 0
-    protected var lastDaySelected: DayDateMonthYearModel? = null
+open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Context, protected val dayModelList: ArrayList<DayDateMonthYearModel>) : RecyclerView.Adapter<T>() {
+    var itemWidthPx: Int = 0
+    var paddingBetweenElements: Int = 0
+    protected var selectedIndex: Int = 0
     protected var color = R.color.black
-    private var toCallBack: HorizontalCalendarListener? = null
-    private var clickedTextView: TextView? = null
-    private val dateArrayList = ArrayList<TextView>()
-    private val dayArrayList = ArrayList<TextView>()
-    private val dividerArrayList = ArrayList<View>()
+    var toCallBack: HorizontalCalendarListener? = null
     private var weekMode = WeekNameMode.SHORT
+
 
     protected open val customLayout: Int
         get() = R.layout.custom_day_layout
 
-    fun setCallback(toCallBack: HorizontalCalendarListener) {
-        this.toCallBack = toCallBack
-    }
-
-    fun setItemWidth(widthPx: Int) {
-        this.itemWidthPx = widthPx
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): T {
         val itemView = LayoutInflater.from(parent.context)
@@ -55,31 +50,15 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
         val t = getWeekDayName(position)
         holder.day.setTextColor(ContextCompat.getColor(context, color))
         holder.date.setTextColor(ContextCompat.getColor(context, color))
-        if (dayModelList[position].isToday) {
-            updateSelectedItemUI(holder.itemView)
-            lastDaySelected = dayModelList[position]
-            try {
-                val cb = CallBack(toCallBack!!, "newDateSelected")
-                cb.invoke(dayModelList[position])
-            } catch (e: InvocationTargetException) {
-                //non
-            } catch (e: IllegalAccessException) {
-            } catch (e: NoSuchMethodException) {
-            }
-
-        }
-
-        holder.day.text = context.getString(R.string.add_space_to_end, t)
+        holder.day.text = t
         holder.date.text = dayModelList[position].date
         holder.itemView.tag = position
-        dateArrayList.add(holder.date)
-        dayArrayList.add(holder.day)
-        dividerArrayList.add(holder.divider)
-        holder.divider.setBackgroundColor(ContextCompat.getColor(context, color))
         holder.itemView.setOnClickListener { v ->
             val pos = Integer.valueOf(v.tag.toString())
-            updateSelectedItemUI(v)
-
+            dayModelList[selectedIndex].isSelected = false
+            dayModelList[pos].isSelected = true
+            selectedIndex = pos
+            styleCurrentDate(holder)
             try {
                 val cb = CallBack(toCallBack!!, "newDateSelected")
                 cb.invoke(dayModelList[pos])
@@ -88,33 +67,46 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
             } catch (e: IllegalAccessException) {
             } catch (e: NoSuchMethodException) {
             }
-
-            lastDaySelected = dayModelList[pos]
+            notifyDataSetChanged()
+        }
+        assignStyles(holder, position)
+    }
+    private fun assignStyles(holder: T, position: Int) {
+        when {
+            dayModelList[position].isSelected -> {
+                styleCurrentDate(holder)
+                selectedIndex = position
+            }
+            dayModelList[position].isToday -> styleTodaysDate(holder)
+            else -> styleNonSelectedDate(holder)
         }
     }
 
-    protected open fun updateSelectedItemUI(root: View) {
-        val date = root.findViewById<TextView>(R.id.date)
-        if (clickedTextView == null) {
-            clickedTextView = date
-            clickedTextView!!.background = ContextCompat.getDrawable(context, R.drawable.background_selected_day)
-            clickedTextView!!.setTextColor(ContextCompat.getColor(context, R.color.white))
-            clickedTextView!!.setTypeface(clickedTextView!!.typeface, Typeface.NORMAL)
-        } else {
-            //                    if(!dayModelList.get(pos).isToday) {
-            if (lastDaySelected != null && lastDaySelected!!.isToday) {
-                clickedTextView!!.background = ContextCompat.getDrawable(context, R.drawable.currect_date_background)
-                clickedTextView!!.setTextColor(ContextCompat.getColor(context, R.color.white))
-                clickedTextView!!.setTypeface(clickedTextView!!.typeface, Typeface.NORMAL)
-            } else {
-                clickedTextView!!.background = null
-                clickedTextView!!.setTextColor(ContextCompat.getColor(context, R.color.grayTextColor))
-                clickedTextView!!.setTypeface(clickedTextView!!.typeface, Typeface.NORMAL)
-            }
-            clickedTextView = date
-            clickedTextView!!.background = ContextCompat.getDrawable(context, R.drawable.background_selected_day)
-            clickedTextView!!.setTextColor(ContextCompat.getColor(context, R.color.white))
-            clickedTextView!!.setTypeface(clickedTextView!!.typeface, Typeface.NORMAL)
+
+    internal open fun styleCurrentDate(holder: T) {
+        val view = holder.itemView.date
+        if(view is TextView) {
+            view.background = ContextCompat.getDrawable(context, R.drawable.background_selected_day)
+            view.setTextColor(ContextCompat.getColor(context, R.color.white))
+            view.setTypeface(view.typeface, Typeface.NORMAL)
+        }
+    }
+
+    internal open fun styleTodaysDate(holder: T) {
+        val view = holder.itemView.date
+        if(view is TextView) {
+            view.background = ContextCompat.getDrawable(context, R.drawable.currect_date_background)
+            view.setTextColor(ContextCompat.getColor(context, R.color.white))
+            view.setTypeface(view.typeface, Typeface.NORMAL)
+        }
+    }
+
+    internal open fun styleNonSelectedDate(holder: T) {
+        val view = holder.itemView.date
+        if(view is TextView) {
+            view.background = null
+            view.setTextColor(ContextCompat.getColor(context, R.color.grayTextColor))
+            view.setTypeface(view.typeface, Typeface.NORMAL)
         }
     }
 
@@ -122,7 +114,8 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
         val day = dayModelList[position].day
         return when (weekMode) {
             WeekNameMode.SHORT -> day.substring(0, 1)
-            WeekNameMode.MEDIUM -> day
+            WeekNameMode.MEDIUM -> day.substring(0, 3)
+            WeekNameMode.FULL -> day
         }
     }
 
@@ -134,24 +127,9 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
         dayModelList.add(DDMYModel)
         notifyItemInserted(dayModelList.size - 1)
     }
-
-    override fun onViewAttachedToWindow(holder: T) {
-        holder.setIsRecyclable(false)
-        super.onViewAttachedToWindow(holder)
-    }
-
-    override fun onViewDetachedFromWindow(holder: T) {
-        holder.setIsRecyclable(false)
-        super.onViewDetachedFromWindow(holder)
-    }
-
     fun changeAccent(color: Int) {
         this.color = color
-        for (i in dateArrayList.indices) {
-            dayArrayList[i].setTextColor(ContextCompat.getColor(context, color))
-            dateArrayList[i].setTextColor(ContextCompat.getColor(context, color))
-            dividerArrayList[i].setBackgroundColor(ContextCompat.getColor(context, color))
-        }
+        notifyDataSetChanged()
     }
 
     fun reloadData(adapter: CalAdapter<*>?) {
@@ -166,22 +144,15 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
         this.weekMode = weekMode
     }
 
+
     enum class WeekNameMode {
-        SHORT, MEDIUM
+        SHORT, MEDIUM, FULL
     }
 
     open class MyViewHolder(root: View) : RecyclerView.ViewHolder(root) {
-        var day: TextView = root.findViewById(R.id.day)
+        var day: TextView = root.findViewById(R.id.day_of_week)
         var date: TextView = root.findViewById(R.id.date)
-        var background: View
         var divider: View = root.findViewById(R.id.divider)
 
-        init {
-            background = date
-        }
-
-        protected open fun setBackgroundColor(drawable: Drawable) {
-            background.background = drawable
-        }
     }
 }
