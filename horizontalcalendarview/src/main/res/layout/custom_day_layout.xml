@@ -12,10 +12,9 @@
         android:gravity="center"
         android:layout_gravity="center">
         <TextView
-            android:id="@+id/day"
+            android:id="@+id/day_of_week"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="T"
             android:gravity="center"
             android:layout_gravity="center"
             android:textColor="@color/grayTextColor"/>
@@ -37,7 +36,6 @@
             android:id="@+id/date"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="23"
             android:textSize="17sp"
             android:gravity="center"
             android:layout_gravity="center" />
@@ -54,6 +52,7 @@
             android:id="@+id/have_appointment"
             android:layout_width="17.5dp"
             android:layout_height="wrap_content"
+            android:contentDescription="@string/three_dots"
             app:srcCompat="@drawable/ic_three_dots"/>
     </LinearLayout>
 </LinearLayout>

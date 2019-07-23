@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity(), HorizontalCalendarListener {
         val hcv = findViewById<HorizontalCalendarView>(R.id.hcv)
         hcv.setContext(this@MainActivity)
         hcv.setBackgroundColor(ContextCompat.getColor(this, R.color.background))
-        //hcv.setMaterialStyle(true, 0xfff16262.toInt())
+        hcv.setMaterialStyle(true, 0xfff16262.toInt())
         hcv.setWeekNameMode(CalAdapter.WeekNameMode.MEDIUM)
         hcv.showControls(false)
         hcv.setControlTint(R.color.colorAccent)

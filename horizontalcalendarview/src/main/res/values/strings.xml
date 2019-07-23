@@ -3,4 +3,5 @@
     <string name="add_space_to_end">%1$s </string>
     <string name="content_desc_left_control">Scroll date list left</string>
     <string name="content_desc_right_control">Scroll date list right</string>
+    <string name="three_dots">Three dots</string>
 </resources>
