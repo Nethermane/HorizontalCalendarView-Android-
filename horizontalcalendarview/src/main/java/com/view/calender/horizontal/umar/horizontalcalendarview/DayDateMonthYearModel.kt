@@ -13,7 +13,7 @@ class DayDateMonthYearModel(
         private val timeInMillis: Long,
         var isSelected: Boolean = false
 ) {
-    private val localDate = Calendar.getInstance().apply { timeInMillis = this@DayDateMonthYearModel.timeInMillis }
+    val localDate: Calendar = Calendar.getInstance().apply { timeInMillis = this@DayDateMonthYearModel.timeInMillis }
     companion object {
         val monthNames: Array<String> = arrayOf("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
         val daysOfWeek: Array<String> = arrayOf("Sunday","Monday","Tuesday","Wednesday","Thursday", "Friday","Saturday")
