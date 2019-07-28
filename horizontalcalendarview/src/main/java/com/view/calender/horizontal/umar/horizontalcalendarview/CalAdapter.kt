@@ -29,6 +29,7 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
     protected var color = R.color.black
     var toCallBack: HorizontalCalendarListener? = null
     private var weekMode = WeekNameMode.SHORT
+    private var lastToday: DayDateMonthYearModel? = null
 
 
     protected open val customLayout: Int
@@ -55,7 +56,13 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
         holder.itemView.tag = position
         holder.itemView.setOnClickListener { v ->
             val pos = Integer.valueOf(v.tag.toString())
+            lastToday?.let {
+                if(!it.isToday())
+                    notifyDataSetChanged()
+            }
+
             dayModelList[selectedIndex].isSelected = false
+            notifyItemChanged(selectedIndex)
             dayModelList[pos].isSelected = true
             selectedIndex = pos
             styleCurrentDate(holder)
@@ -63,21 +70,24 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
                 val cb = CallBack(toCallBack!!, "newDateSelected")
                 cb.invoke(dayModelList[pos])
             } catch (e: InvocationTargetException) {
-                //non
             } catch (e: IllegalAccessException) {
             } catch (e: NoSuchMethodException) {
             }
-            notifyDataSetChanged()
+            notifyItemChanged(selectedIndex)
         }
         assignStyles(holder, position)
     }
+
     private fun assignStyles(holder: T, position: Int) {
         when {
             dayModelList[position].isSelected -> {
                 styleCurrentDate(holder)
                 selectedIndex = position
             }
-            dayModelList[position].isToday -> styleTodaysDate(holder)
+            dayModelList[position].isToday() -> {
+                styleTodaysDate(holder)
+                lastToday = dayModelList[position]
+            }
             else -> styleNonSelectedDate(holder)
         }
     }
@@ -85,7 +95,7 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
 
     internal open fun styleCurrentDate(holder: T) {
         val view = holder.itemView.date
-        if(view is TextView) {
+        if (view is TextView) {
             view.background = ContextCompat.getDrawable(context, R.drawable.background_selected_day)
             view.setTextColor(ContextCompat.getColor(context, R.color.white))
             view.setTypeface(view.typeface, Typeface.NORMAL)
@@ -94,7 +104,7 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
 
     internal open fun styleTodaysDate(holder: T) {
         val view = holder.itemView.date
-        if(view is TextView) {
+        if (view is TextView) {
             view.background = ContextCompat.getDrawable(context, R.drawable.currect_date_background)
             view.setTextColor(ContextCompat.getColor(context, R.color.white))
             view.setTypeface(view.typeface, Typeface.NORMAL)
@@ -103,7 +113,7 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
 
     internal open fun styleNonSelectedDate(holder: T) {
         val view = holder.itemView.date
-        if(view is TextView) {
+        if (view is TextView) {
             view.background = null
             view.setTextColor(ContextCompat.getColor(context, R.color.grayTextColor))
             view.setTypeface(view.typeface, Typeface.NORMAL)
@@ -127,6 +137,7 @@ open class CalAdapter<T : CalAdapter.MyViewHolder>(protected var context: Contex
         dayModelList.add(DDMYModel)
         notifyItemInserted(dayModelList.size - 1)
     }
+
     fun changeAccent(color: Int) {
         this.color = color
         notifyDataSetChanged()

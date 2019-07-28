@@ -77,7 +77,6 @@ class HorizontalCalendarView : LinearLayout {
             //                Toast.makeText(mContext, "right but", Toast.LENGTH_SHORT).show();
             recyclerView.smoothScrollToPosition(linearLayoutManager.findLastVisibleItemPosition() + 3)
         }
-
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
@@ -165,7 +164,7 @@ class HorizontalCalendarView : LinearLayout {
             calAdapter = newCalAdapter()
             linearLayoutManager = LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false)
             recyclerView.layoutManager = linearLayoutManager
-            recyclerView.itemAnimator = DefaultItemAnimator()
+            recyclerView.itemAnimator = null
             recyclerView.adapter = calAdapter
             LinearSnapHelper().attachToRecyclerView(recyclerView)
             horizontalPaginationScroller = object : HorizontalPaginationScroller(linearLayoutManager) {
